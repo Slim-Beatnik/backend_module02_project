@@ -7,51 +7,47 @@ on:
 
 jobs:
   build:
-    name: python
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          uv-version: '0.7.0'
-
-      - name: Enable caching
-        uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
-
-      - name: "Set up Python"
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: ".python-version"
-
-      - name: Print debugging information
-        run: |
-          echo "Python Version: $(python --version)"
-          echo "Working Directory: $(pwd)"
-          echo "Contents of Working Directory: $(ls -l)"
-          echo "Contents of site-packages: $(ls -l venv/lib/python*/site-packages)"
-
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Install uv
-        run: pip install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          uv-version: '0.7.0'
+          enable-cache: true
 
-      - name: Sync dependencies with uv
+      - name: Sync dependencies
+        run: uv sync
+
+  test:
+    name: Test
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          uv-version: '0.7.0'
+          enable-cache: true
+
+      - name: Sync dependencies
         run: uv sync
 
       - name: Run unit tests
-        run: uv run unittest discover -s tests
+        run: uv run python -m unittest discover -s tests
