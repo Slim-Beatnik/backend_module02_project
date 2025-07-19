@@ -7,22 +7,26 @@ on:
 
 jobs:
   build:
+    name: python
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
+      - uses: actions/checkout@v4
 
       - name: Install uv
-        run: pip install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          uv-version: '0.7.0'
 
-      - name: Sync dependencies with uv
-        run: uv sync -- all
+      - name: Enable caching
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
 
       - name: Print debugging information
         run: |
@@ -47,7 +51,7 @@ jobs:
         run: pip install uv
 
       - name: Sync dependencies with uv
-        run: uv sync --all
+        run: uv sync
 
       - name: Run unit tests
-        run: uv pip run python -m unittest discover -s tests -p 'test_*.py'
+        run: uv run unittest discover -s tests
