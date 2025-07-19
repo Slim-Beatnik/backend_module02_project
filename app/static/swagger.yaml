@@ -1,0 +1,1887 @@
+
+swagger: "2.0"
+info:
+  title: "Repair Shop Database"
+  description: "Mock mechanic shop db"
+  version: "1.2.0"
+schemes:
+- "http"
+host: "127.0.0.1:5000"
+
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+paths:
+# ================ CUSTOMERS ===========================
+  /customers/login:
+    post:
+      tags:
+        - Customers
+      summary: "Login endpoint, (generates token)"
+      description: "Validates customer credentials, generates and return a customer specific token. *Token times out in 1 hour*"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Login Credentials"
+          required: true
+          schema:
+            $ref: "#/definitions/LoginCredentials"
+      responses:
+        200:
+          description: "Login successful"
+          schema:
+            $ref: "#/definitions/LoginResponse"
+            example:
+              application/json:
+                {
+                  "email": "kyle@gmail.com",
+                  "password": "test"
+                }
+        400:
+          description: "Required data missing from body"
+          schema: 
+            $ref: "#/definitions/LoginMessage"
+            example:
+              application/json:
+                {
+                  "message": "Username and password required."
+                }
+        401:
+          description: "Email or Password not found to match OR user.soft_delete=1 (check user 2 after delete)"
+          schema:
+            $ref: "#/definitions/LoginError"
+            example:
+              application/json:
+                {
+                  "error": "Invalid email or password!"
+                }
+
+  /customers/:
+    post:
+      tags:
+        - Customers
+      summary: "Create Customer"
+      description: "Data object requires: name, email (*must be unique*), phone number (*11 character limit*) and password.\n*Limited to 5 per day*"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateCustomerPayload"
+      responses:
+        201:
+          description: "Customer creation successful"
+          schema:
+            $ref: "#/definitions/CreateCustomerResponse"
+            example:
+              application/json:
+                {
+                  "name": "Kyle",
+                  "email": "kyle@gmail.com",
+                  "password": "test",
+                  "phone": "0123456789"
+                }
+        400:
+          description: "Required data missing from body"
+          schema: 
+            $ref: "#/definitions/Customer400Message"
+            example:
+              application/json:
+                {
+                  "name": "Kyle"
+                }
+        401:
+          description: "Email already associated with account - same email as first example. \n*Note* Testing duplicate email will reduce number of attempts per limiter"
+          schema:
+            $ref: "#/definitions/LoginError"
+            example:
+              application/json:
+                {
+                  "error": "Email already associated with an account."
+                }
+
+    put:
+      tags:
+      - Customers
+      - Method Protection → Customer Token
+      summary: "Change customer data - PROTECTED METHOD - add 'Bearer ' and paste in the token"
+      description: "Customer id based on bearer token decode payload, Logged-in customer can change their data.\n*Change some data to test - Limit 6 per day*"
+      
+      security:
+        - bearerAuth: []
+      
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Customer data"
+          required: true
+          schema:
+            $ref: ""
+            example:
+              {
+                "name": "Kyle",
+                "email": "",
+                "password": "",
+                "phone": "9876543210"
+              }
+      
+      responses:
+        200:
+          description: "Change successful"
+          schema:
+            $ref: ""
+            example:
+              description: "Uppercase name field, and updated phone number"
+              application/json:
+                {
+                  "name": "Kyle",
+                  "email": "kyle@gmail.com",
+                  "password": "test",
+                  "phone": "98765443210"
+                }
+
+        422:
+          description: "All fields sent without data - no change"
+          schema:
+            example:
+              {
+                "message": "No changes made"
+              }
+
+        400:
+          description: "Validation error - if no phone data is present in request"
+          schema:
+            $ref: "#/definitions/Customer400Message"
+            example:
+              application/json:
+                {
+                  "message": "{'phone': ['Missing data for required field.']} - all customer data fields required."
+                }
+    delete:
+      tags:
+      - Customers
+      - Method Protection → Customer Token
+      summary: "Soft delete customers - PROTECTED METHOD - add 'Bearer ' and paste in the token"
+      description: "Set soft_delete parameter to 1 (true) - limit: 5 per day\n*NOTE: soft delete used to keep records for tax year or longer if recallable parts used in repair.*"
+      
+      security:
+        - bearerAuth: []
+
+      parameters: []
+
+      responses:
+        200:
+          description: "Customer successfully marked for deletion"
+          schema:
+            $ref: "#/definitions/CustomerDeleteResponse"
+            example:
+              application/json:
+                {
+                  "message": "Customer successfully marked for deletion"
+                }
+        404:
+          description: "Customer not found"
+          schema:
+            $ref: "#/definitions/Customer404Error"
+            example:
+              application/json:
+                {
+                  "error": "Customer not found."
+                }
+    
+    get:
+      tags:
+        - Customers
+        - Method Protection → Mechanic Token
+      summary: "Get All Customers - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
+      description: "Mechanics/Admin only\n *Example* /customers/?page=1&per_page=5"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: query
+          name: page
+          type: integer
+          required: false
+        - in: query
+          name: per_page
+          type: integer
+          required: false
+
+      responses:
+        200:
+          description: "All customers view for mechanics, pagination is optional, "
+          schema:
+            $ref: "#/definitions/ViewCustomersAsMechanic"
+            example:
+              application/json:
+                [{
+                  "id": 1,
+                  "name": "Kyle",
+                  "email": "kyle@gmail.com",
+                  "phone": "0123456789"
+                },
+                {
+                  "id": integer,
+                  "name": "Rev",
+                  "email": "rev@gmail.com",
+                  "phone": "1234567890"
+                }]
+
+  /customers/{customer_id}:
+    get:
+      tags:
+        - Customers
+        - Method Protection → Mechanic Token
+      summary: "Get customer by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
+      description: "Mechanic route to get customer by id"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: path
+          name: customer_id
+          type: integer
+          required: true
+          description: "The customer ID number"
+
+      responses:
+        200:
+          description: "Customer data shown in a successful response"
+          schema:
+            $ref: "#/definitions/ViewCustomerAsMechanic"
+            example:
+              application/json:
+                {
+                  "id": integer,
+                  "name": "Kyle",
+                  "email": "kyle@gmail.com",
+                  "phone": "0123456789"
+                }
+        404:
+          description: "Customer not found"
+          schema:
+            $ref: "#/definitions/Customer404Error"
+            example:
+              application/json:
+                {"error": "Customer not found"}
+
+  /customers/my-account:
+    get:
+      tags:
+        - Customers
+        - Method Protection → Customer Token
+      summary: "Get customer by customer token - PROTECTED METHOD - add 'Bearer ' and paste in the customer token"
+      description: "Customer route to view their data."
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        200:
+          description: "Customer data upon succesful response"
+          schema:
+            $ref: "#/definitions/CreateCustomerResponse"
+            example:
+              application/json:
+                {
+                  "name": "Kyle",
+                  "email": "kyle@gmail.com",
+                  "password": "test",
+                  "phone": "0123456789"
+                }
+        404:
+          description: "Customer not found"
+          schema:
+            $ref: "#/definitions/Customer404Error"
+            example:
+              application/json:
+                {"error": "Customer not found"}
+
+# ======================= INVENTORY ====================
+  /inventory/:
+    post:
+      tags:
+        - Inventory
+        - Method Protection → Mechanic Token
+      summary: "Create inventory item"
+      description: "Required fields: product_name, price | optional field: recallable, defaults to true"
+      
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateInventoryPayload"
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        201:
+          description: Successful creation
+          schema:
+            $ref: "#/definitions/CreateInventoryResponse"
+        400:
+          description: "Bad request"
+          schema:
+            example:
+              {
+                "message": "'error details' - all inventory fields required"
+              }
+        401:
+          description: "Non-unique product_name field"
+          schema:
+            example:
+              {
+                "error": "Products require unique names for clarity."
+              }
+    get:
+      tags:
+          - Inventory
+          - Method Protection → Mechanic Token
+      summary: "Get All Inventory - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
+      description: "Mechanics/Admin only\n *Example* /customers/?page=1&per_page=5"
+
+      parameters:
+        - in: query
+          name: page
+          type: integer
+          required: false
+        - in: query
+          name: per_page
+          type: integer
+          required: false
+      
+      security:
+        - bearerAuth: []
+
+      responses:
+        200:
+          description: "All customers view for mechanics, pagination is optional, "
+          schema:
+            $ref: "#/definitions/ViewInventoriesAsMechanic"
+
+  /inventory/{inventory_id}:
+    get:
+      tags:
+        - Inventory
+        - Method Protection → Mechanic Token
+      summary: "Get inventory item by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
+      description: "Mechanic route to get inventory item by id"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: path
+          name: inventory_id
+          type: integer
+          required: true
+          description: "The inventory ID number"
+
+      responses:
+        200:
+          description: "Inventory data shown in a successful response"
+          schema:
+            $ref: "#/definitions/CreateInventoryResponse"
+            example:
+              application/json:
+                {
+                  "id": 1,
+                  "product_name": "Regular Oil - HOUSE",
+                  "price": 13.45,
+                  "recallable": false,
+                  "recalled": false,
+                  "no_longer_used": false
+                }
+        404:
+          description: "Inventory not found"
+          schema:
+            example:
+              {
+                "error": "Inventory not found."
+              }
+    put:
+      tags:
+        - Inventory
+        - Method Protection → Mechanic Token
+      summary: "Get inventory item by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
+      description: "Mechanic route to get inventory item by id"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: path
+          name: inventory_id
+          type: integer
+          required: true
+          description: "The inventory ID number"
+
+      responses:
+        200:
+          description: "Inventory data shown in a successful response"
+          schema:
+            $ref: "#/definitions/CreateInventoryResponse"
+            example:
+              application/json:
+                {
+                  "id": 1,
+                  "product_name": "Regular Oil - HOUSE",
+                  "price": 13.45,
+                  "recallable": false,
+                  "recalled": false,
+                  "no_longer_used": false
+                }
+        400:  
+          description: "Bad request"
+          schema:
+            example:
+              {
+                "message": "'error details' - all inventory fields required"
+              }
+        404:
+          description: "Inventory not found"
+          schema:
+            example:
+              {
+                "error": "Inventory not found."
+              }
+    delete:
+      tags:
+        - Inventory
+        - Method Protection → Mechanic Token
+      summary: "Delete inventory item by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
+      description: "Mechanic route to delete inventory item by id"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: path
+          name: inventory_id
+          type: integer
+          required: true
+          description: "The inventory ID number"
+
+      responses:
+        200:
+          description: "Inventory item successfully deleted"
+          schema:
+            example:
+              {
+                "message": "Inventory item successfully deleted"
+              }
+        404:
+          description: "Inventory not found"
+          schema:
+            example:
+              {
+                "error": "Inventory not found."
+              }
+
+  /inventory/current:
+    get:
+      tags:
+        - Inventory
+        - Method Protection → Mechanic Token
+      summary: "Get current inventory items"
+      description: "Mechanics/Admin only"
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        200:
+          description: "Current inventory items"
+          schema:
+            $ref: "#/definitions/ViewInventoriesAsMechanic"
+            example:
+              application/json:
+                [
+                  {
+                    "id": 1,
+                    "product_name": "Regular Oil - HOUSE",
+                    "price": 13.45,
+                    "recallable": false,
+                    "recalled": false,
+                    "no_longer_used": false
+                  },
+                  {
+                    "id": 2,
+                    "product_name": "High Mileage Oil - HOUSE",
+                    "price": 15.95,
+                    "recallable": false,
+                    "recalled": false,
+                    "no_longer_used": false
+                  }
+                ]
+  
+  /inventory/search:
+    get:
+      tags:
+        - Inventory
+        - Method Protection → Mechanic Token
+      summary: "Search inventory items by name"
+      description: "Mechanics/Admin only"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: query
+          name: product_name
+          type: string
+          required: false
+        - in: query
+          name: recallable
+          type: integer
+          enum: [0, 1]
+          required: false
+        - in: query
+          type: integer
+          enum: [0, 1]
+          required: false
+        - in: query
+          name: na
+          type: integer
+          enum: [0, 1]
+          required: false
+        - in: query
+          name: any
+          type: string
+          required: false
+
+      responses:
+        200:
+          description: "Search results for inventory items"
+          schema:
+            $ref: "#/definitions/ViewInventoriesAsMechanic"
+            example:
+              application/json:
+                [
+                  {
+                    "id": 1,
+                    "product_name": "Regular Oil - HOUSE",
+                    "price": 13.45,
+                    "recallable": false,
+                    "recalled": false,
+                    "no_longer_used": false
+                  }
+                ]
+        400:
+          description: "Bad request - no search parameters provided"
+          schema:
+            example:
+              {
+                "message": "No search parameters provided."
+              }
+
+  /inventory/shop:
+    get:
+      tags:
+        - Inventory
+      summary: "Get all inventory items for shop"
+      description: "Customers can view all inventory items available in the shop.\n*current inventory only*"
+
+      responses:
+        200:
+          description: "All inventory items for shop"
+          schema:
+            $ref: "#/definitions/ViewInventoriesAsCustomer"
+            example:
+              application/json:
+                [
+                  {
+                    "id": 1,
+                    "product_name": "Regular Oil - HOUSE",
+                    "price": 13.45,
+                    "recallable": false,
+                    "recalled": false,
+                    "no_longer_used": false
+                  },
+                  {
+                    "id": 2,
+                    "product_name": "High Mileage Oil - HOUSE",
+                    "price": 15.95,
+                    "recallable": false,
+                    "recalled": false,
+                    "no_longer_used": false
+                  }
+                ]
+  /inventory/shop/product/{product_id}:
+    get:
+      tags:
+        - Inventory
+      summary: "Get inventory item by id number for shop"
+      description: "Customers can view a specific inventory item by id number."
+
+      parameters:
+        - in: path
+          name: product_id
+          type: integer
+          required: true
+          description: "The inventory ID number"
+
+      responses:
+        200:
+          description: "Inventory item data shown in a successful response"
+          schema:
+            $ref: "#/definitions/CreateInventoryResponse"
+            example:
+              application/json:
+                {
+                  "product_name": "Regular Oil - HOUSE",
+                  "price": 13.45
+                }
+        404:
+          description: "Inventory item not found"
+          schema:
+            example:
+              {
+                "error": "Inventory item not found."
+              }
+  /inventory/shop/search:
+    get:
+      tags:
+        - Inventory
+      summary: "Search inventory items for shop"
+      description: "Customers can search inventory items available in the shop.\n*current inventory only*"
+
+      parameters:
+        - in: query
+          name: name
+          type: string
+          required: false
+        - in: query
+          name: price
+          type: integer
+          required: false
+        - in: query
+          name: any
+          type: string
+          required: false
+
+      responses:
+        200:
+          description: "Search results for inventory items"
+          schema:
+            $ref: "#/definitions/ViewInventoriesAsCustomer"
+        400:
+          description: "Bad request - no search parameters provided"
+          schema:
+            example:
+              {
+                "message": "No search parameters provided."
+              }
+
+# ======================= MECHANICS ====================
+  /mechanics/login:
+    post:
+      tags:
+        - Mechanics
+      summary: "Login endpoint, (generates token)"
+      description: "Validates mechanic credentials, generates and return a mechanic specific token. *Token times out in 1 hour*"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Login Credentials"
+          required: true
+          schema:
+            example:
+              {
+                "email": "ed@repairshop.com",
+                "password": "test1"
+              }
+      responses:
+        200:
+          description: "Login successful"
+          schema:
+            $ref: "#/definitions/LoginResponse"
+            example:
+              application/json:
+                {
+                  "email": "ed@repairshop.com",
+                  "password": "test1"
+                }
+        400:
+          description: "Required data missing from body"
+          schema: 
+            $ref: "#/definitions/LoginMessage"
+            example:
+              application/json:
+                {
+                  "message": "Username and password required."
+                }
+        401:
+          description: "Email or Password not found to match OR user.soft_delete=1 (check user 2 after delete)"
+          schema:
+            $ref: "#/definitions/LoginError"
+            example:
+              application/json:
+                {
+                  "error": "Invalid email or password!"
+                }
+
+  /mechanics/:
+    post:
+      tags:
+        - Mechanics
+      summary: "Create Mechanic"
+      description: "Data object requires: name, email (*must be unique*), phone number (*11 character limit*) and password.\n*Limited to 5 per day*"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateMechanicPayload"
+      responses:
+        201:
+          description: "Mechanic creation successful"
+          schema:
+            $ref: "#/definitions/CreateMechanicResponse"
+        400:
+          description: "Required data missing from body"
+          schema: 
+            $ref: "#/definitions/Customer400Message"
+            example:
+              application/json:
+                {
+                  "message": "all data fields required"
+                }
+        409:
+          description: "Email already associated with account - same email as first example. \n*Note* Testing duplicate email will reduce number of attempts per limiter"
+          schema:
+            $ref: "#/definitions/LoginError"
+            example:
+              application/json:
+                {
+                  "error": "'error details' integrity error."
+                }
+    
+    get:
+      tags:
+        - Mechanics
+        - Method Protection → Mechanic Token
+      summary: "Get All Mechanics - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
+      description: "Mechanics/Admin only\n *Example* /mechanics/?page=1&per_page=5"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: query
+          name: page
+          type: integer
+          required: false
+        - in: query
+          name: per_page
+          type: integer
+          required: false
+
+      responses:
+        200:
+          description: "All mechanics view for mechanics, pagination is optional, "
+          schema:
+            example:
+              [
+                {
+                    "email": "ed@repairshop.com",
+                    "id": 1,
+                    "name": "ed",
+                    "password": "test1",
+                    "phone": "9719719711",
+                    "salary": 199999.0
+                },
+                {
+                    "email": "edd@repairshop.com",
+                    "id": 2,
+                    "name": "edd",
+                    "password": "test2",
+                    "phone": "5035035033",
+                    "salary": 2.0
+                }
+              ]
+
+  /mechanics/{mechanic_id}:
+    put:
+      tags:
+      - Mechanics
+      - Method Protection → Mechanic Token
+      summary: "Change mechanic data - PROTECTED METHOD - add 'Bearer ' and paste in the token"
+      description: "Mechanic id based on bearer token decode payload, Logged-in mechanic can change their data.\n*Change some data to test - Limit 6 per day*"
+      
+      security:
+        - bearerAuth: []
+      
+      parameters:
+        - in: path
+          name: mechanic_id
+          type: integer
+          required: true
+          description: The id of the mechanic who's data is changing
+        - in: "body"
+          name: "body"
+          description: "The new data for the mechanic"
+          required: true
+          schema:
+            $ref: ""
+            example:
+              {
+                "name": "Ed",
+                "email": "",
+                "password": "",
+                "phone": "3434433434",
+                "salary": 0
+              }
+      
+      responses:
+        200:
+          description: "Change successful"
+          schema:
+            $ref: ""
+            description: "Returns all mechanic data\n*Changes in example:* Uppercase name field, and updated phone number"
+            example:
+              {
+                "id": 1,
+                "name": "Ed",
+                "email": "ed@repairshop.com",
+                "password": "test1",
+                "phone": "3434433434",
+                "salary": 290000
+              }
+
+        422:
+          description: "All fields sent without data - no change"
+          schema:
+            example:
+              {
+                "message": "No changes made"
+              }
+        
+        400:
+          description: "Validation error - if no phone data is present in request"
+          schema:
+            $ref: "#/definitions/Customer400Message"
+            example:
+              application/json:
+                {
+                  "message": "{'phone': ['Missing data for required field.']} - all mechanic data fields required."
+                }
+    delete:
+      tags:
+      - Mechanics
+      - Method Protection → Mechanic Token
+      summary: "Soft delete mechanics - PROTECTED METHOD - add 'Bearer ' and paste in the token"
+      description: "Set soft_delete parameter to 1 (true) - limit: 5 per day\n*NOTE: soft delete used to keep records for tax year or longer if recallable parts used in repair.*"
+      
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: path
+          name: mechanic_id
+          type: integer
+          required: true
+
+      responses:
+        200:
+          description: "Mechanic successfully marked for deletion"
+          schema:
+            example:
+              {
+                "message": "Mechanic successfully marked for deletion"
+              }
+        404:
+          description: "Mechanic not found"
+          schema:
+            example:
+              {
+                "error": "Mechanic not found."
+              }
+
+  /mechanics/top-mechanics:
+    get:
+      tags:
+      - Mechanics
+      summary: "Get Mechanics by rank (number of assigned tickets)"
+      description: "Ranked object with mechanic's name and the number of tickets to which they are assigned"
+
+      parameters:
+        - in: query
+          name: limit
+          type: integer
+          description: "default value is 3"
+          required: false
+      
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            example:
+              {
+                "1": {
+                    "name": "ed",
+                    "ticket_count": 4
+                },
+                "2": {
+                    "name": "eddy",
+                    "ticket_count": 3
+                },
+                "3": {
+                    "name": "edd",
+                    "ticket_count": 1
+                }
+              }
+
+  /mechanics/current-customer-search:
+    get:
+      tags:
+        - Mechanics
+        - Method Protection → Mechanic Token
+      summary: "Mechanics can search non-deleted customers by any piece of information"
+      description: "Query terms: id, name, email, phone, or any"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: query
+          name: id
+          type: integer
+          required: false
+        - in: query
+          name: name
+          type: string
+          required: false
+        - in: query
+          name: email
+          type: string
+          required: false
+        - in: query
+          name: phone
+          type: string
+          required: false
+        - in: query
+          name: any
+          type: string
+          required: false
+
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            example:
+              [
+                {
+                    "email": "kyle@gmail.com",
+                    "id": 1,
+                    "name": "kyle",
+                    "phone": "9714175138",
+                    "soft_delete": false
+                },
+                {
+                    "email": "ace@gmail.com",
+                    "id": 3,
+                    "name": "aeslin",
+                    "phone": "9713403030",
+                    "soft_delete": false
+                },
+                {
+                    "email": "dummy@gmail.com",
+                    "id": 4,
+                    "name": "dummy",
+                    "phone": "5033286403",
+                    "soft_delete": false
+                },
+                {
+                    "email": "jaime@gmail.com",
+                    "id": 5,
+                    "name": "jaime",
+                    "phone": "1234567890",
+                    "soft_delete": false
+                }
+              ]
+
+        404:
+          description: "No results"
+          examples:
+            {
+              "message": Filters failed to yield results.
+            }
+
+  /mechanics/deleted-customer-search:
+    get:
+      tags:
+        - Mechanics
+        - Method Protection → Mechanic Token
+      summary: "Mechanics can search non-deleted customers by any piece of information"
+      description: "Query terms: id, name, email, phone, or any"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: query
+          name: id
+          type: integer
+          required: false
+        - in: query
+          name: name
+          type: string
+          required: false
+        - in: query
+          name: email
+          type: string
+          required: false
+        - in: query
+          name: phone
+          type: string
+          required: false
+        - in: query
+          name: any
+          type: string
+          required: false
+
+      responses:
+        200:
+          description: "Successful request"
+          schema:
+            example:
+              [
+                {
+                    "email": "revel@gmail.com",
+                    "id": 2,
+                    "name": "rev",
+                    "phone": "5033286403",
+                    "soft_delete": true
+                }
+              ]
+
+        404:
+          description: "No results"
+          examples:
+            {
+              "message": Filters failed to yield results.
+            }
+
+# =================== SERVICE TICKETS =========================
+  # ============== Customer Token Protected ==============
+  /service_tickets/my-tickets:
+    get:
+      tags:
+        - Service Tickets
+        - Method Protection → Customer Token
+      summary: "Get all service tickets for customer - PROTECTED METHOD - add 'Bearer ' and paste in the customer token"
+      description: "Customer route to view their service tickets."
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        200:
+          description: "Customer's service tickets shown in a successful response"
+          schema:
+            $ref: "#/definitions/ViewServiceTickets"
+            example:
+              application/json:
+                [
+                  {
+                    "id": 3,
+                    "inventories":
+                      [
+                        {
+                          "id": 1,
+                          "product_name": "Regular Oil - HOUSE",
+                          "price": 13.45
+                        }
+                      ],
+                    "mechanics":
+                      [
+                        {
+                          "id": 1,
+                          "name": "ed",
+                          "phone": "9719719711"
+                        },
+                        {
+                        "id": 2,
+                        "name": "edd",
+                        "phone": "5035035033"
+                        }
+                      ],
+                    "service_date": "2021-02-20",
+                    "service_desc": "oil change",
+                    "vin": "abcdefghijklmnop3"
+                  },
+                  {
+                    "id": 2,
+                    "vin": "abcdefghijklmnop2",
+                    "service_date": "2025-07-17",
+                    "service_desc": "oil change",
+                    "customer_id": 1,
+                    "inventories": [],
+                    "mechanics": []
+                  }
+                ]
+        404:
+          description: "Service not found"
+          schema:
+            example:
+              {
+                "error": "Service tickets not found. It's entirely possible this customer has no tickets."
+              }
+
+  # ============== Mechanic Token Protected ==============
+  /service_tickets/:
+    post:
+      tags:
+        - Service Tickets
+        - Method Protection → Mechanic Token
+      summary: "Create a service ticket"
+      description: "Required fields: vin (exactly 17 characters long), service_date (format: YYYY-MM-DD), service_desc, customer_id"
+      
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateServiceTicketPayload"
+      
+      responses:
+        201:
+          description: "Service ticket creation successful"
+          schema:
+            $ref: "#/definitions/CreateServiceTicketResponse"
+            example:
+              application/json:
+                {
+                  "id": 16,
+                  "vin": "abcdefghijklmnop9",
+                  "service_date": "2022-11-11",
+                  "service_desc": "windshield fluid refill",
+                  "customer_id": 1,
+                  "inventories": [],
+                  "mechanics": []
+                }
+        400:
+          description: "Required data missing from body"
+          schema: 
+            $ref: "#/definitions/Customer400Message"
+            example:
+              application/json:
+                {
+                  "message": "'error details' - all service ticket fields required"
+                }
+        404:
+          description: "Customer not found"
+          schema:
+            example:
+              {
+                "error": "Customer not found."
+              }
+        422:
+          description: "Can't make a service ticket for a deleted customer"
+          schema:
+            example:
+              {
+                "error": "Customer was previously deleted."
+              }
+    get:
+      tags:
+        - Service Tickets
+        - Method Protection → Mechanic Token
+      summary: "Get All Service Tickets - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
+      description: "Mechanics/Admin only\n *Example* /service_tickets/?page=1&per_page=5"
+
+      security:
+        - bearerAuth: []
+      
+      parameters:
+        - in: query
+          name: page
+          type: integer
+          required: false
+        - in: query
+          name: per_page
+          type: integer
+          required: false
+      
+      responses:
+        200:
+          description: "All service tickets view for mechanics, pagination is optional, "
+          schema:
+            $ref: "#/definitions/ViewServiceTickets"
+            example:
+              application/json:
+                [
+                  {
+                    "id": 1,
+                    "vin": "abcdefghijklmnop1",
+                    "service_date": "2022-11-11",
+                    "service_desc": "windshield fluid refill",
+                    "customer_id": 1,
+                    "inventories": [],
+                    "mechanics": []
+                  },
+                  {
+                    "id": 2,
+                    "vin": "abcdefghijklmnop2",
+                    "service_date": "2022-11-12",
+                    "service_desc": "oil change",
+                    "customer_id": 2,
+                    "inventories": [],
+                    "mechanics": []
+                  }
+                ]
+
+  /service_tickets/{ticket_id}:
+    get:
+      tags:
+        - Service Tickets
+        - Method Protection → Mechanic Token
+      summary: "Get service ticket by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
+      description: "Mechanic route to get service ticket by id"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: path
+          name: ticket_id
+          type: integer
+          required: true
+          description: "The service ticket ID number"
+
+      responses:
+        200:
+          description: "Service ticket data shown in a successful response"
+          schema:
+            $ref: "#/definitions/CreateServiceTicketResponse"
+            example:
+              application/json:
+                {
+                  "id": 1,
+                  "vin": "abcdefghijklmnop1",
+                  "service_date": "2022-11-11",
+                  "service_desc": "windshield fluid refill",
+                  "customer_id": 1,
+                  "inventories": [],
+                  "mechanics": []
+                }
+        404:
+          description: "Service ticket not found"
+          schema:
+            example:
+              {
+                "error": "Service ticket not found."
+              }
+
+  /service_tickets/{ticket_id}/edit-mechanics:
+    put:
+      tags:
+        - Service Tickets
+        - Method Protection → Mechanic Token
+      summary: "Assign mechanics to service ticket by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
+      description: "Mechanic route to assign mechanics to service ticket by id"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: path
+          name: ticket_id
+          type: integer
+          required: true
+          description: "The service ticket ID number"
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/EditMechanicsOnServiceTicket"
+
+      responses:
+        200:
+          description: "Service ticket data shown in a successful response"
+          schema:
+            $ref: "#/definitions/ViewServiceTickets"
+        400:
+          description: "Mechanic not found or already assigned to this service ticket"
+          schema:
+            example:
+              {
+                "message": "'error details' - both add_mechanic_ids, and remove_mechanic_id fields are required."
+              }
+
+  /service_tickets/{ticket_id}/edit-inventories:
+    put:
+      tags:
+        - Service Tickets
+        - Method Protection → Mechanic Token
+      summary: "Assign inventories to service ticket by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
+      description: "Mechanic route to assign inventories to service ticket by id"
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: path
+          name: ticket_id
+          type: integer
+          required: true
+          description: "The service ticket ID number"
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/EditInventoryOnServiceTicket"
+
+      responses:
+        200:
+          description: "Service ticket data shown in a successful response"
+          schema:
+            $ref: "#/definitions/ViewServiceTickets"
+        400:
+          description: "Inventory not found or already assigned to this service ticket"
+          schema:
+            example:
+              {
+                "message": "'error details' - both add_inventory_ids, and remove_inventory_id fields are required."
+              }
+
+definitions: 
+  LoginCredentials:
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+
+    required:
+      - email
+      - password
+
+    example:
+      email: "kyle@gmail.com"
+      password: "test"
+
+  LoginResponse:
+    type: object
+    properties:
+      auth_token:
+        type: string
+      message:
+        type: string
+      status:
+        type: string
+
+    example:
+      auth_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTE4MzE0ODEsImlhdCI6MTc1MTgyNzg4MSwic3ViIjoiMSIsInJvbGUiOiJjdXN0b21lciJ9.pCT3Ksn3aVgg8hEChUW1Z9hfDrRXiwnUThXK3gjD_fM"
+      message: "Successfully Logged In"
+      status: "success"
+
+  LoginMessage:
+    type: object
+    properties:
+      message:
+        type: string
+    example:
+      message: "Username and password required."
+
+  LoginError:
+    type: object
+    properties:
+      error:
+        type: string
+    example:
+      error: "Invalid email or password!"
+
+  CreateCustomerPayload:
+    type: object
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+        maxLength: 11
+    example:
+      name: "Kyle"
+      email: "kyle@gmail.com"
+      password: "test"
+      phone: "0123456789"
+
+  CreateInventoryPayload:
+    type: object
+    properties:
+      product_name:
+        type: string
+      price:
+        type: number
+        format: float
+      recallable:
+        type: boolean
+    example:
+      product_name: Regular Oil - HOUSE
+      price: 13.45
+      recallable: false
+
+  CreateMechanicPayload:
+    type: object
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+        maxLength: 11
+      salary:
+        type: number
+        format: float
+    example:
+      name: "ed"
+      email: "ed@repairshop.com"
+      password: "test1"
+      phone: "0123456789"
+      salary: 290000.00
+
+  CreateServiceTicketPayload:
+    type: object
+    properties:
+      vin:
+        type: string
+        minLength: 17
+        maxLength: 17
+      service_date:
+        type: string
+        format: date-time
+      service_desc:
+        type: string
+      customer_id:
+        type: integer
+    example:
+      vin: "abcdefghijklmnop9"
+      service_date: "2022-11-11"
+      service_desc: "windshield fluid refill"
+      customer_id: 1
+
+  CreateCustomerResponse:
+    type: object
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+    example:
+      name: "Kyle"
+      email: "kyle@gmail.com"
+      password: "test"
+      phone: "0123456789"
+
+  CreateInventoryResponse:
+    type: object
+    properties: 
+      id:
+        type: integer
+      product_name:
+        type: string
+      price:
+        type: number
+        format: float
+      recalled:
+        type: boolean
+      recallable:
+        type: boolean
+      # soft deleted?
+      no_longer_used:
+        type: boolean
+    example:
+      id: 1
+      product_name: Regular Oil - HOUSE
+      price: 13.45
+      recallable: false
+      recalled: false
+      no_longer_used: 0
+
+  CreateMechanicResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      salary:
+        type: number
+        format: float
+    example:
+      id: 1
+      name: "Ed"
+      email: "ed@repairshop.com"
+      password: "test1"
+      phone: "0123456789"
+      salary: 290000.00
+
+  CreateServiceTicketResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+      vin:
+        type: string
+        minLength: 17
+        maxLength: 17
+      service_date:
+        type: string
+        format: date
+      service_desc:
+        type: string
+      customer_id:
+        type: integer
+      inventories:
+        type: array
+        items:
+          $ref: "#/definitions/ViewInventoryAsCustomer"
+      mechanics:
+        type: array
+    example:
+      {
+        "id": 16,
+        "customer_id": 1,
+        "inventories": [],
+        "mechanics": [],
+        "service_date": "2022-11-11",
+        "service_desc": "windshield fluid refill",
+        "vin": "abcdefghijklmnop9"
+      }
+
+  EditInventoryOnServiceTicket:
+    type: object
+    properties:
+      add_inventory_ids:
+        type: array
+        items:
+          type: integer
+      remove_inventory_id:
+        type: integer
+    example:
+      add_inventory_ids: [1, 2]
+      remove_inventory_id: [3]
+
+  EditMechanicsOnServiceTicket:
+    type: object
+    properties:
+      add_mechanic_ids:
+        type: array
+        items:
+          type: integer
+      remove_mechanic_id:
+        type: integer
+    example:
+      add_mechanic_ids: [1, 2]
+      remove_mechanic_id: [3]
+
+  ViewCustomerAsMechanic:
+    type: object
+    description: "Password not visible to mechanic."
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+    example:
+      id: 1
+      name: "Kyle"
+      email: "kyle@gmail.com"
+      phone: "0123456789"
+      soft_delete: false
+
+  ViewCustomersAsMechanic:
+    type: array
+    description: "pagination optional via ?page=*integer*&per_page=*integer*"
+    items:
+      $ref: "#/definitions/ViewCustomerAsMechanic"
+    example:
+        [
+          {
+              "email": "kyle@gmail.com",
+              "id": 1,
+              "name": "kyle",
+              "phone": "9714175138",
+              "soft_delete": false
+          },
+          {
+              "email": "revel@gmail.com",
+              "id": 2,
+              "name": "rev",
+              "phone": "5033286403",
+              "soft_delete": true
+          },
+          {
+              "email": "ace@gmail.com",
+              "id": 3,
+              "name": "aeslin",
+              "phone": "9713403030",
+              "soft_delete": false
+          },
+          {
+              "email": "dummy@gmail.com",
+              "id": 4,
+              "name": "dummy",
+              "phone": "5033286403",
+              "soft_delete": false
+          },
+          {
+              "email": "jaime@gmail.com",
+              "id": 5,
+              "name": "jaime",
+              "phone": "1234567890",
+              "soft_delete": false
+          }
+        ]
+
+  ViewInventoryAsCustomer:
+    type: object
+    description: "Inventory item view for customers"
+    properties:
+      product_name:
+        type: string
+      price:
+        type: number
+        format: float
+    example:
+      {
+        "product_name": "Regular Oil - HOUSE",
+        "price": 13.45
+      }
+
+  ViewInventoriesAsCustomer:
+    type: array
+    description: "view inventory items product_name and price"
+    items:
+      $ref: "#/definitions/ViewInventoryAsCustomer"
+    example:
+      [
+        {
+          "product_name": "Regular Oil - HOUSE",
+          "price": 13.45
+        },
+        {
+          "product_name": "High Mileage Oil - HOUSE",
+          "price": 15.95
+        },
+        {
+          "product_name": "Regular Oil - Brand: x",
+          "price": 18.0
+        },
+        {
+          "product_name": "High Milage Oil - HOUSE",
+          "price": 20.99
+        },
+        {
+          "product_name": "Tires - Brand: Firestone",
+          "price": 127.85
+        }
+      ]
+
+  ViewInventoriesAsMechanic:
+    type: array
+    description: "pagination optional via ?page=*integer*&per_page=*integer*"
+    items:
+      $ref: "#/definitions/CreateInventoryResponse"
+    example:
+      [
+        {
+          "id": 1,
+          "product_name": "Regular Oil - HOUSE",
+          "price": 13.45,
+          "recallable": false,
+          "recalled": false,
+          "no_longer_used": 0
+        },
+        {
+          "id": 2,
+          "product_name": "High Mileage Oil - HOUSE",
+          "price": 15.95,
+          "recallable": false,
+          "recalled": false,
+          "no_longer_used": 0
+        },
+        {
+          "id": 3,
+          "product_name": "Regular Oil - Brand: x",
+          "price": 18.0,
+          "recallable": false,
+          "recalled": false,
+          "no_longer_used": 0
+        },
+        {
+          "id": 4,
+          "product_name": "High Milage Oil - HOUSE",
+          "price": 20.99,
+          "recallable": false,
+          "recalled": false,
+          "no_longer_used": false
+        },
+        {
+          "id": 5,
+          "product_name": "Tires - Brand: Firestone",
+          "price": 127.85,
+          "recallable": true,
+          "recalled": false,
+          "no_longer_used": false
+        }
+      ]
+
+  ViewServiceTickets:
+    type: object
+    properties:
+      id:
+        type: integer
+      vin:
+        type: string
+        minLength: 17
+        maxLength: 17
+      service_date:
+        type: string
+        format: date
+      service_desc:
+        type: string
+      inventories:
+        type: array
+        items:
+          $ref: "#/definitions/InventoriesOnServiceTicket"
+      mechanics:
+        type: array
+        items:
+          $ref: "#/definitions/MechanicsOnServiceTicket"
+    example:
+      {
+        "id": 16,
+        "inventories":
+          [
+            {
+              "product_name": "Regular Oil - HOUSE",
+              "price": 13.45
+            },
+            {
+              "product_name": "High Mileage Oil - HOUSE",
+              "price": 15.95
+            }
+          ],
+        "mechanics":
+          [
+            {
+              "name": "ed",
+              "phone": "9719719711",
+              "email": "ed@repairshop.com"
+            },
+            {
+              "name": "edd",
+              "phone": "5035035033",
+              "email": "edd@repairshop.com"
+            }
+          ],
+        "service_date": "2022-11-11",
+        "service_desc": "windshield fluid refill",
+        "vin": "abcdefghijklmnop9"
+      }
+
+  InventoriesOnServiceTicket:
+    type: array
+    items:
+      $ref: "#/definitions/ViewInventoryAsCustomer"
+    example:
+      [
+        {
+          "product_name": "Regular Oil - HOUSE",
+          "price": 13.45
+        },
+        {
+          "product_name": "High Mileage Oil - HOUSE",
+          "price": 15.95
+        }
+      ]
+
+  MechanicsOnServiceTicket:
+    type: array
+    items:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+    example:
+      [
+        {
+          "name": "ed",
+          "phone": "9719719711",
+          "email": "ed@repairshop.com"
+        },
+        {
+          "name": "edd",
+          "phone": "5035035033",
+          "email": "edd@repairshop.com"
+        }
+      ]
+
+  Customer400Message:
+    type: object
+    properties: 
+      message:
+        type: string
+    example:
+      message: "'error details' - all customer data fields required."
+
+  Customer404Error:
+    type: object
+    properties:
+      error:
+        type: string
+    example:
+      error: "Customer not found"
+
+  CustomerDeleteResponse:
+    type: object
+    properties:
+      message:
+        type: string
+    example:
+      message: "Customer successfully marked for deletion"
+
+
+
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header

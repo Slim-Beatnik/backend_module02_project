@@ -1,0 +1,43 @@
+├── BACKEND_MODULE01_PROJECT/
+│   ├── .gitignore
+│   ├── app.py
+│   ├── config.py
+│   ├── LICENSE.txt
+│   ├── originalERD.pdf
+│   ├── project_tree.txt
+│   ├── pyproject.toml
+│   ├── README.md
+│   ├── repair_shop_db.postman_environment.json
+│   ├── repair_shop_db.postman_collection.json
+│   ├── requirements.txt
+│   └── uv.lock
+├── app/
+│   ├── extensions.py
+│   ├── models.py
+│   ├── __init__.py
+│   ├── blueprints/
+│   │   ├── customer/
+│   │   │   ├── routes.py
+│   │   │   ├── schemas.py
+│   │   │   └── __init__.py
+│   │   ├── inventory/
+│   │   │   ├── routes.py
+│   │   │   ├── schemas.py
+│   │   │   └── __init__.py
+│   │   ├── mechanics/
+│   │   │   ├── routes.py
+│   │   │   ├── schemas.py
+│   │   │   └── __init__.py
+│   │   └── service_tickets/
+│   │       ├── routes.py
+│   │       ├── schemas.py
+│   │       └── __init__.py
+│   ├── static/
+│   │   └── swagger.yaml
+│   └── utils/
+│       └── util.py
+└── tests/
+    ├── test_customer.py
+    ├── test_inventory.py
+    ├── test_mechanics.py
+    └── test_service_tickets.py
