@@ -211,7 +211,7 @@ def shop_search_inventories():
     # learned a thing or two about select objects
     # if no values in query select object initialized with customer_id
     stmt = select(Inventory)
-    filters = [Inventory.no_longer_used == False]
+    filters = [not Inventory.no_longer_used]
 
     # Loop model columns matching provided queries -- skip 'any' and None values
     for key, value in queries.items():
@@ -238,7 +238,7 @@ def shop_search_inventories():
 
     if not filtered_inventories:
         return jsonify(
-            {"result": [], "message": "Filters failed to yield results."}
+            {"result": [], "message": "Filters failed to yield results."},
         ), 200
 
     return jsonify(shop_inventories_schema.dump(filtered_inventories)), 200

@@ -5,8 +5,8 @@ info:
   description: "Mock mechanic shop db"
   version: "1.2.0"
 schemes:
-- "http"
-host: "127.0.0.1:5000"
+- "https"
+host: "backend-module02-project.onrender.com"
 
 consumes:
   - "application/json"

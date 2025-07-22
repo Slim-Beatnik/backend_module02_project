@@ -170,7 +170,7 @@ def search_for_customer():
         return jsonify({"message": "No search parameters provided."}), 400
 
     # search non-deleted customers
-    stmt = select(Customer).where(Customer.soft_delete == False)
+    stmt = select(Customer).where(not Customer.soft_delete)
     filters = []
 
     # Loop model columns matching provided queries -- skip 'any' and None values
@@ -225,7 +225,7 @@ def search_for_deleted_customer():
         return jsonify({"message": "No search parameters provided."}), 400
 
     # search non-deleted customers
-    stmt = select(Customer).where(Customer.soft_delete == True)
+    stmt = select(Customer).where(Customer.soft_delete)
     filters = []
 
     # Loop model columns matching provided queries -- skip 'any' and None values
