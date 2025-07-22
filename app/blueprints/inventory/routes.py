@@ -211,7 +211,7 @@ def shop_search_inventories():
     # learned a thing or two about select objects
     # if no values in query select object initialized with customer_id
     stmt = select(Inventory)
-    filters = [not Inventory.no_longer_used]
+    filters = [Inventory.no_longer_used == False]
 
     # Loop model columns matching provided queries -- skip 'any' and None values
     for key, value in queries.items():
