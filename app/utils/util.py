@@ -60,7 +60,7 @@ def role_required(f):
 
         if not token:
             return jsonify(
-                {"message": f"{request.headers}\nToken is missing or malformed"}
+                {"message": f"{request.headers}\nToken is missing or malformed"},
             ), 401
 
         try:
