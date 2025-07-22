@@ -67,8 +67,8 @@ Windows: python -m unittest discover tests
 Mac: : python -m unittest discover tests
 
 Check out the API documentation by running the app:
-```sh
-  python a
+Go to:
+
 
 Presenting
 All students who joined Coding Temple February and onward need to present there project either on Thursdays or Friday live sessions, or you can schedule a 1-on-1 with Dylan to present.

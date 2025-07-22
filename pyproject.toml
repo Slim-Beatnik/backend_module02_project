@@ -12,9 +12,17 @@ dependencies = [
     "flask-sqlalchemy>=3.1.1",
     "flask-swagger>=0.2.14",
     "flask-swagger-ui>=5.21.0",
+    "gunicorn>=23.0.0",
     "marshmallow>=4.0.0",
     "marshmallow-sqlalchemy>=1.4.2",
     "mysql-connector-python>=9.3.0",
+    "psycopg2>=2.9.10",
     "python-jose>=3.5.0",
     "requests>=2.32.3",
+]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.403",
+    "python-dotenv>=1.1.1",
 ]

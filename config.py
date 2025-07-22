@@ -1,3 +1,6 @@
+import os
+
+
 class DevelopmentConfig:
     SQLALCHEMY_DATABASE_URI = (
         "mysql+mysqlconnector://root:test@localhost/repair_shop_db"
@@ -15,4 +18,5 @@ class TestingConfig:
 
 
 class ProductionConfig:
-    pass
+    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
+    CACHE_TYPE = "SimpleCache"

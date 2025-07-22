@@ -1,3 +1,4 @@
+import os
 from datetime import UTC, datetime, timedelta
 from functools import wraps
 
@@ -5,7 +6,7 @@ import jose
 from flask import g, jsonify, request
 from jose import jwt
 
-SECRET_KEY = "A0P6RS_get_shwifty"
+SECRET_KEY = os.environ.get("SECRET_KEY", "A0P6RS_YourMom_get_schwifty")
 
 ROLE_SPECIFIC_TIMEOUT = {
     "mechanic": 8,
