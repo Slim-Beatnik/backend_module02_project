@@ -30,6 +30,7 @@ jobs:
   
   build:
     name: Build
+    needs: [lock_file]
     runs-on: ubuntu-latest
 
     steps:
@@ -91,7 +92,7 @@ jobs:
         run: uv sync
 
       - name: Deploy to production
-        uses: johnbeynon/render-deploy-action@0.0.8
+        uses: johnbeynon/render-deploy-action@v0.0.8
         with:
           service_id: ${{ secrets.RENDER_SERVICE_ID }}
           api_key: ${{ secrets.RENDER_API_KEY }}
