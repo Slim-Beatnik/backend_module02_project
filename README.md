@@ -30,7 +30,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck">
+  <a href="https://github.com/Slim-Beatnik/backend_module02_project">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
@@ -39,51 +39,46 @@ See project_tree.txt for the directory layout
 <h3 align="center">Repair Shop DB</h3>
 
   <p align="center">
-Documentation:
-Utilizing Flask-Swagger and Flask-Swagger-UI Document Each Route of your API. Each Route Requires:
-
-Path:
-Endpoint
-Type of request (post, get, put, delete)
-tag (category for the route)
-summary
-description
-security: Points to the security definition (Only need this for token authenticated routes)
-parameters: Information about what the data the route requires(Only required for POST and PUT request)
-responses: Information about what the data  route returns (Should include examples)
-Definition(s):
-PayloadDefinition: Defines the "Shape" of the incoming data (Only required for POST and PUT requests)
-ResponseDefinitions: Defines the "Shape" of the outgoing data 
-Testing:
-
-Utilizing the built-in unittest library:
-Create a tests folder inside you project folder
-Create a test file for each of your blueprints (test_mechanics.py, test_customers.py, etc.) inside the tests folder
-Create one test for every route in your API.
-incorporate negative tests in your testing.
-run your tests with: 
-
-Windows: python -m unittest discover tests
-Mac: : python -m unittest discover tests
-
-Check out the API documentation by running the app:
-Go to:
-
-
-Presenting
-All students who joined Coding Temple February and onward need to present there project either on Thursdays or Friday live sessions, or you can schedule a 1-on-1 with Dylan to present.
-For Pre-February students you are still encouraged to present as it is a great way to build you Tech-Communication skills which are a must.
-
-
+    Deployment and CI/CD Pipeline
+    <br/>
+    Follow along with the videos in Lesson 5 to:
+    Host a database to Render
+    Create your production config
+    Install gunicorn psycopg2 python-dotenv (freeze to your requirements.txt and manually remove python-dotenv)
+    Store sensitive information as an environmental variable in your .env file (database uri and secret key)
+    add .env to your .gitignore
+    Use the os package to retrieve those environmental variable
+    Rename app.py to flask_app.py
+    Pass your ProductionConfig into your create_app function inside flask_app.py
+    Remove app.run() from flask_app.py
+    Push to your github repository
+    Deploy a Web Service on Render using the link to your github repository (make sure to add your environment variables during the deploy process).
+    After successful deployment adjust your swagger documentation host from 127.0.0.1:5000 to the base url of your live API (base url should not include https://)
+    Change your swagger schemes from http to https
+    CI/CD Pipline:
+    Create .github folder with a workflows folder inside
+    Create a main.yaml file inside the workflows folder.
+    In the main.yaml file create a workflow including:
+    ---- name: name of workflow
+    ---- on: trigger for workflow
+    ---- jobs: Create the build and test jobs 
+    Store the Render SERVICE_ID and RENDER_API_KEY as secrets in your github repository
+    Set up the deploy job in your .github/workflows/main.yaml and make it dependant on the test job needs: test
+    Submission:
+    After deploying submit the link to your deployed service as well as the the link to your github repository.
+    <br/>
+    Presenting
+    All students who joined Coding Temple February and onward need to present there project either on Thursdays or Friday live sessions, or you can schedule a 1-on-1 with Dylan to present.
+    For Pre-February students you are still encouraged to present as it is a great way to build you Tech-Communication skills which are a must.
     <br />
-    <a href="https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/Slim-Beatnik/backend_module02_project"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck">View Demo</a>
+    <a href="https://github.com/Slim-Beatnik/backend_module02_project">View Demo</a>
     &middot;
-    <a href="https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/Slim-Beatnik/backend_module02_project/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     &middot;
-    <a href="https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/Slim-Beatnik/backend_module02_project/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
@@ -149,11 +144,11 @@ To get a local copy up and running follow these simple example steps.
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck.git
+   git clone https://github.com/Slim-Beatnik/backend_module02_project.git
    ```
 2. Change git remote url to avoid accidental pushes to base project
    ```sh
-   git remote set-url origin Slim-Beatnik/backend_module02_knowledgeCheck
+   git remote set-url origin Slim-Beatnik/backend_module02_project
    git remote -v # confirm the changes
    ```
 3. Create a virtual environment
@@ -172,8 +167,8 @@ To get a local copy up and running follow these simple example steps.
 5. run app on windows or mac
   pip:
    ```sh
-   venv\\Scripts\\Activate
-   source venv/bin/activate
+   .venv\\Scripts\\Activate
+   source .venv/bin/activate
   ```
   Windows:
   ```sh
@@ -209,13 +204,14 @@ OR
   And another folder for read, update and delete:
   _RUD
 
+
+
 8. 
-  Open a browser and go to [/api/docs](http://127.0.0.1:5000/api/docs/)
+  Open a browser and go to [/api/docs](https://backend-module02-project.onrender.com/api/docs) - link updated to live onrender site
   This will open the swagger doc and show api calls based on their tags:
   Customer, Inventory, Mechanics, ServiceTickets, Method Protection → Customer Token, and Method Protection → Mechanic Token
 
-  *If visit this site before running the postman document, remember to create customers, inventory items, mechanics and service tickets before attempting to use any other methods.
-  **Note - it won't break anything, IT WILL simply return 4xx response codes.
+  Feel free to mess around
 
 Notes:
   several deletes are soft-deletes with intent -
@@ -229,24 +225,11 @@ Notes:
   Both Mechanics and Inventory objects can be associated with a service ticket with add and remove id_lists
 
 
-Features and heartbreak:
-
-1.  Creating a flushed out version of the app with testing has lead to some interesting issues.
-The ServiceTicket class Model is now created without the constraint.
-MySQL vs. sqlite, has a unique response while using sqlalchemy's CheckConstraint.
-MySQL uses CHAR_LENGTH() while sqlite uses LENGTH()
-
-  The work around was to add a conditional helper function within the models.py file, import it into the __init__.py file, where the create_app function lives.
-  Once the app is created we can use app_context to extract the different versions of database handling using db.engine.dialect.name
-  From there it plugs in the helper function and uses the conditional to append_constraint to the table allowing the appropriate function for the CheckConstraint function.
-
-2. The assignment was set up in such a way that it makes me feel like I'm being shown what not to do as much as I am being shown how to do it properly.
-  With the appropriate planning, I would have created routes, created tests, and the swagger documentation simultaneously.
-  Instead the assignment build out every route before, for this knowledge check, simultaneously writing the documentation and testing, all while refactoring the weaker functions.
-  This is a valuable lesson, but further, infuriating.
-  
-  I submit myself to more rigorous creation and planning going forward.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+Features:
+  1. I was able to create the CI configuration with uv, and I added an additional setup action.yaml that is used to install uv that I can simply refere to in every
+
+
 
 
 
@@ -264,7 +247,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-See the [open issues](https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/Slim-Beatnik/backend_module02_project/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -288,8 +271,8 @@ Don't forget to give the project a star! Thanks again!
 
 ### Top contributors:
 
-<a href="https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Slim-Beatnik/backend_module02_knowledgeCheck" alt="contrib.rocks image" />
+<a href="https://github.com/Slim-Beatnik/backend_module02_project/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Slim-Beatnik/backend_module02_project" alt="contrib.rocks image" />
 </a>
 
 
@@ -306,9 +289,9 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - totem64@gmail.com.com
+Kyle Hill - totem64@gmail.com
 
-Project Link: [https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck](https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck)
+Project Link: [https://github.com/Slim-Beatnik/backend_module02_project](https://github.com/Slim-Beatnik/backend_module02_project)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -327,16 +310,16 @@ Project Link: [https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck](
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/Slim-Beatnik/backend_module02_knowledgeCheck.svg?style=for-the-badge
-[contributors-url]: https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/Slim-Beatnik/backend_module02_knowledgeCheck.svg?style=for-the-badge
-[forks-url]: https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck/network/members
-[stars-shield]: https://img.shields.io/github/stars/Slim-Beatnik/backend_module02_knowledgeCheck.svg?style=for-the-badge
-[stars-url]: https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck/stargazers
-[issues-shield]: https://img.shields.io/github/issues/Slim-Beatnik/backend_module02_knowledgeCheck.svg?style=for-the-badge
-[issues-url]: https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck/issues
-[license-shield]: https://img.shields.io/github/license/Slim-Beatnik/backend_module02_knowledgeCheck.svg?style=for-the-badge
-[license-url]: https://github.com/Slim-Beatnik/backend_module02_knowledgeCheck/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/Slim-Beatnik/backend_module02_project.svg?style=for-the-badge
+[contributors-url]: https://github.com/Slim-Beatnik/backend_module02_project/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/Slim-Beatnik/backend_module02_project.svg?style=for-the-badge
+[forks-url]: https://github.com/Slim-Beatnik/backend_module02_project/network/members
+[stars-shield]: https://img.shields.io/github/stars/Slim-Beatnik/backend_module02_project.svg?style=for-the-badge
+[stars-url]: https://github.com/Slim-Beatnik/backend_module02_project/stargazers
+[issues-shield]: https://img.shields.io/github/issues/Slim-Beatnik/backend_module02_project.svg?style=for-the-badge
+[issues-url]: https://github.com/Slim-Beatnik/backend_module02_project/issues
+[license-shield]: https://img.shields.io/github/license/Slim-Beatnik/backend_module02_project.svg?style=for-the-badge
+[license-url]: https://github.com/Slim-Beatnik/backend_module02_project/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/3dkylehill
 [product-screenshot]: images/screenshot.png
