@@ -70,3 +70,28 @@ jobs:
 
       - name: Run unit tests
         run: uv run python -m unittest discover -s tests
+
+  deploy:
+    name: Deploy
+    needs: [test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - uses: actions/checkout@v4
+      - uses: ./.github/workflows/actions/setup
+
+      - name: Sync dependencies
+        run: uv sync
+
+      - name: Deploy to production
+        uses: johnbeynon/render-deploy-action@0.0.8
+        with:
+          service_id: ${{ secrets.RENDER_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}

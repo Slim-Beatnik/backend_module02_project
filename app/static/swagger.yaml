@@ -543,6 +543,7 @@ paths:
           enum: [0, 1]
           required: false
         - in: query
+          name: recalled
           type: integer
           enum: [0, 1]
           required: false
