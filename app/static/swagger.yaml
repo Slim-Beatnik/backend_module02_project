@@ -104,7 +104,7 @@ paths:
     put:
       tags:
       - Customers
-      - Method Protection → Customer Token
+      - Token Required → Customer
       summary: "Change customer data - PROTECTED METHOD - add 'Bearer ' and paste in the token"
       description: "Customer id based on bearer token decode payload, Logged-in customer can change their data.\n*Change some data to test - Limit 6 per day*"
       
@@ -161,7 +161,7 @@ paths:
     delete:
       tags:
       - Customers
-      - Method Protection → Customer Token
+      - Token Required → Customer
       summary: "Soft delete customers - PROTECTED METHOD - add 'Bearer ' and paste in the token"
       description: "Set soft_delete parameter to 1 (true) - limit: 5 per day\n*NOTE: soft delete used to keep records for tax year or longer if recallable parts used in repair.*"
       
@@ -193,7 +193,7 @@ paths:
     get:
       tags:
         - Customers
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Get All Customers - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
       description: "Mechanics/Admin only\n *Example* /customers/?page=1&per_page=5"
 
@@ -234,7 +234,7 @@ paths:
     get:
       tags:
         - Customers
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Get customer by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
       description: "Mechanic route to get customer by id"
 
@@ -273,7 +273,7 @@ paths:
     get:
       tags:
         - Customers
-        - Method Protection → Customer Token
+        - Token Required → Customer
       summary: "Get customer by customer token - PROTECTED METHOD - add 'Bearer ' and paste in the customer token"
       description: "Customer route to view their data."
 
@@ -306,7 +306,7 @@ paths:
     post:
       tags:
         - Inventory
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Create inventory item"
       description: "Required fields: product_name, price | optional field: recallable, defaults to true"
       
@@ -342,7 +342,7 @@ paths:
     get:
       tags:
           - Inventory
-          - Method Protection → Mechanic Token
+          - Token Required → Mechanic
       summary: "Get All Inventory - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
       description: "Mechanics/Admin only\n *Example* /customers/?page=1&per_page=5"
 
@@ -369,7 +369,7 @@ paths:
     get:
       tags:
         - Inventory
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Get inventory item by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
       description: "Mechanic route to get inventory item by id"
 
@@ -408,7 +408,7 @@ paths:
     put:
       tags:
         - Inventory
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Get inventory item by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
       description: "Mechanic route to get inventory item by id"
 
@@ -454,7 +454,7 @@ paths:
     delete:
       tags:
         - Inventory
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Delete inventory item by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
       description: "Mechanic route to delete inventory item by id"
 
@@ -488,7 +488,7 @@ paths:
     get:
       tags:
         - Inventory
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Get current inventory items"
       description: "Mechanics/Admin only"
 
@@ -525,7 +525,7 @@ paths:
     get:
       tags:
         - Inventory
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Search inventory items by name"
       description: "Mechanics/Admin only"
 
@@ -767,7 +767,7 @@ paths:
     get:
       tags:
         - Mechanics
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Get All Mechanics - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
       description: "Mechanics/Admin only\n *Example* /mechanics/?page=1&per_page=5"
 
@@ -812,7 +812,7 @@ paths:
     put:
       tags:
       - Mechanics
-      - Method Protection → Mechanic Token
+      - Token Required → Mechanic
       summary: "Change mechanic data - PROTECTED METHOD - add 'Bearer ' and paste in the token"
       description: "Mechanic id based on bearer token decode payload, Logged-in mechanic can change their data.\n*Change some data to test - Limit 6 per day*"
       
@@ -876,7 +876,7 @@ paths:
     delete:
       tags:
       - Mechanics
-      - Method Protection → Mechanic Token
+      - Token Required → Mechanic
       summary: "Soft delete mechanics - PROTECTED METHOD - add 'Bearer ' and paste in the token"
       description: "Set soft_delete parameter to 1 (true) - limit: 5 per day\n*NOTE: soft delete used to keep records for tax year or longer if recallable parts used in repair.*"
       
@@ -943,7 +943,7 @@ paths:
     get:
       tags:
         - Mechanics
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Mechanics can search non-deleted customers by any piece of information"
       description: "Query terms: id, name, email, phone, or any"
 
@@ -1019,7 +1019,7 @@ paths:
     get:
       tags:
         - Mechanics
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Mechanics can search non-deleted customers by any piece of information"
       description: "Query terms: id, name, email, phone, or any"
 
@@ -1076,7 +1076,7 @@ paths:
     get:
       tags:
         - Service Tickets
-        - Method Protection → Customer Token
+        - Token Required → Customer
       summary: "Get all service tickets for customer - PROTECTED METHOD - add 'Bearer ' and paste in the customer token"
       description: "Customer route to view their service tickets."
 
@@ -1141,7 +1141,7 @@ paths:
     post:
       tags:
         - Service Tickets
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Create a service ticket"
       description: "Required fields: vin (exactly 17 characters long), service_date (format: YYYY-MM-DD), service_desc, customer_id"
       
@@ -1197,7 +1197,7 @@ paths:
     get:
       tags:
         - Service Tickets
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Get All Service Tickets - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
       description: "Mechanics/Admin only\n *Example* /service_tickets/?page=1&per_page=5"
 
@@ -1246,7 +1246,7 @@ paths:
     get:
       tags:
         - Service Tickets
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Get service ticket by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
       description: "Mechanic route to get service ticket by id"
 
@@ -1288,7 +1288,7 @@ paths:
     put:
       tags:
         - Service Tickets
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Assign mechanics to service ticket by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
       description: "Mechanic route to assign mechanics to service ticket by id"
 
@@ -1324,7 +1324,7 @@ paths:
     put:
       tags:
         - Service Tickets
-        - Method Protection → Mechanic Token
+        - Token Required → Mechanic
       summary: "Assign inventories to service ticket by id number - PROTECTED METHOD - add 'Bearer ' and paste in the mechanic token"
       description: "Mechanic route to assign inventories to service ticket by id"
 
