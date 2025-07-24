@@ -72,6 +72,7 @@ class TestMechanics(SuperTest):
                 "email": "ed@repairshop.com",
                 "phone": "1234567890",
                 "password": "test123",
+                "salary": 100000.00,
             },
         )
 
@@ -79,15 +80,18 @@ class TestMechanics(SuperTest):
         response = self.client.post(
             "/mechanics/",
             json={
-                "name": "Ed2",
+                "name": "Edd",
                 "email": "ed@repairshop.com",  # duplicate email
                 "phone": "0987654321",
                 "password": "test456",
+                "salary": 120000.00,
             },
         )
 
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("- all mechanic data fields required", response.json["message"])
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response.json["error"], "Email already associated with an account."
+        )
 
     def test_login(self):
         login_payload = {
@@ -127,7 +131,7 @@ class TestMechanics(SuperTest):
         response = self.client.post("/mechanics/", json=incomplete_payload)
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("- all mechanic data fields required", response.json["message"])
+        self.assertIn("- all mechanic data required.", response.json["message"])
 
     # =================== MECHANICS TOKEN PROTECTED ===========================
     def test_update(self):

@@ -30,20 +30,22 @@ def create_mechanic():
         mechanic_data = mechanic_schema.load(request.json)
     except ValidationError as e:
         return jsonify(
-            {"message": f"'{e.messages} ' - all mechanic data fields required"},
+            {"message": f"{e.messages} - all mechanic data required."},
         ), 400
 
+    query = select(Mechanics).where(
+        Mechanics.email == mechanic_data["email"],
+    )  # Checking our db for a mechanic with this email
+    existing_mechanic = db.session.execute(query).one_or_none()
+
+    # opted to handle potential IntegrityError with simple error handling
+    if existing_mechanic:
+        return jsonify({"error": "Email already associated with an account."}), 401
+
     new_mechanic = Mechanics(**mechanic_data)
+
     db.session.add(new_mechanic)
-
-    # opted for IntegrityError handling here the error message is more explicit
-    # and would allow office admin to know how exactly what went wrong
-    try:
-        db.session.commit()
-    except IntegrityError as e:
-        db.session.rollback()
-        return jsonify({"error": e.orig.args[1] + " integrity error."}), 409
-
+    db.session.commit()
     return mechanic_schema.jsonify(new_mechanic), 201
 
 
