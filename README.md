@@ -38,7 +38,7 @@ See project_tree.txt for the directory layout
 
 <h3 align="center">Repair Shop DB</h3>
 
-  <p align="center">
+  <p align="justify">
     Deployment and CI/CD Pipeline
     <br/>
     Follow along with the videos in Lesson 5 to:
@@ -55,6 +55,7 @@ See project_tree.txt for the directory layout
     Deploy a Web Service on Render using the link to your github repository (make sure to add your environment variables during the deploy process).
     After successful deployment adjust your swagger documentation host from 127.0.0.1:5000 to the base url of your live API (base url should not include https://)
     Change your swagger schemes from http to https
+    <br/>
     CI/CD Pipline:
     Create .github folder with a workflows folder inside
     Create a main.yaml file inside the workflows folder.
@@ -142,72 +143,10 @@ To get a local copy up and running follow these simple example steps.
 
 ### Installation
 
-1. Clone the repo
-   ```sh
-   git clone https://github.com/Slim-Beatnik/backend_module02_project.git
-   ```
-2. Change git remote url to avoid accidental pushes to base project
-   ```sh
-   git remote set-url origin Slim-Beatnik/backend_module02_project
-   git remote -v # confirm the changes
-   ```
-3. Create a virtual environment
-   ```sh
-   python -m venv venv
-   python3 -m venv venv
-   ```
-4. Install dependencies:
-  pip: ```sh
-    pip install -r requirements.txt
-  ```
-  OR
-  uv: ```sh
-        uv sync
-      ```
-5. run app on windows or mac
-  pip:
-   ```sh
-   .venv\\Scripts\\Activate
-   source .venv/bin/activate
-  ```
-  Windows:
-  ```sh
-   python app.py
-   ```
-  Mac:
-  ```sh
-   python3 app.py
-  ```
+1. 
+  No need to get the repo, unless you're that sort of nerd.
 
-OR
-
-  uv:
-  ```sh
-   uv run app.py
-```
-  Postman setup:
-  repair_shop_db.postman_collection.json must run in the db_test_environment.postman_environment.json
-  - if you're out of free collection runs -
-  Open a terminal and input the following command and navigate to the correct directory for the project.
-  Then:
-  ```sh
-    postman collection run repair_shop_db.postman_collection.json -e db_test_environment.postman_environment.json
-  ```
-
-  then use uv run app.py
-
-6. Verify paths in Postman:
-  import repairshop_db.postman_collection.json
-  You can then run all, or split up your run by folder.
-  There is a main folder for creation:
-  C___
-  And another folder for read, update and delete:
-  _RUD
-
-
-
-8. 
-  Open a browser and go to [/api/docs](https://backend-module02-project.onrender.com/api/docs) - link updated to live onrender site
+  Open a browser and go to [/api/docs](https://backend-module02-project.onrender.com/api/docs) - link updated to live onrender site. The site gets sleepy, so it takes about 23 seconds to go live. From there you can do whatever.
   This will open the swagger doc and show api calls based on their tags:
   Customer, Inventory, Mechanics, ServiceTickets, Method Protection → Customer Token, and Method Protection → Mechanic Token
 
@@ -227,7 +166,7 @@ Notes:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 Features:
-  1. I was able to create the CI configuration with uv, and I added an additional setup action.yaml that is used to install uv that I can simply refere to in every
+  1. I was able to create the CI configuration with uv, and I added an additional setup action.yaml that is used to install uv that I can simply refere to in every action that requires it.
 
 
 
