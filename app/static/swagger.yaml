@@ -1317,7 +1317,7 @@ paths:
           schema:
             example:
               {
-                "message": "'error details' - both add_mechanic_ids, and remove_mechanic_id fields are required."
+                "message": "'error details' - both add_mechanic_ids, and remove_mechanic_ids fields are required."
               }
 
   /service_tickets/{ticket_id}/edit-inventories:
@@ -1353,7 +1353,7 @@ paths:
           schema:
             example:
               {
-                "message": "'error details' - both add_inventory_ids, and remove_inventory_id fields are required."
+                "message": "'error details' - both add_inventory_ids, and remove_inventory_ids fields are required."
               }
 
 definitions: 
@@ -1585,11 +1585,11 @@ definitions:
         type: array
         items:
           type: integer
-      remove_inventory_id:
+      remove_inventory_ids:
         type: integer
     example:
       add_inventory_ids: [1, 2]
-      remove_inventory_id: [3]
+      remove_inventory_ids: [3]
 
   EditMechanicsOnServiceTicket:
     type: object
@@ -1598,11 +1598,11 @@ definitions:
         type: array
         items:
           type: integer
-      remove_mechanic_id:
+      remove_mechanic_ids:
         type: integer
     example:
       add_mechanic_ids: [1, 2]
-      remove_mechanic_id: [3]
+      remove_mechanic_ids: [3]
 
   ViewCustomerAsMechanic:
     type: object
